@@ -2,9 +2,9 @@
 // @name         NIE Filler
 // @description  Script for NIE automatic form filling for the Barcelona area
 // @namespace    https://sede.administracionespublicas.gob.es/
-// @version      1.4
+// @version      1.5
 // @author       k.strizhak84@gmail.com
-// @match        https://sede.administracionespublicas.gob.es/icpplustieb*
+// @match        https://sede.administracionespublicas.gob.es/icpplustie*
 // @require      https://code.jquery.com/jquery-2.1.4.min.js
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -56,9 +56,9 @@
         auto_retry_interval_min       : 1,    // Interval in minutes, after which to retry finding an appointment.
     };
 
-    var APPLICANT_LIST_STYLE = "background: yellow; position: absolute; top: 0; right: 0; padding: 3px;";
+    var APPLICANT_LIST_STYLE = "background: yellow; position: absolute; top: 0; right: 0; padding: 3px; z-index: 10;";
 
-    var PAGE_1_BASE_URL   = "https://sede.administracionespublicas.gob.es/icpplustieb/citar";
+    var PAGE_1_BASE_URL   = "https://sede.administracionespublicas.gob.es/icpplustie/citar?p=8&locale=es";
     var PAGE_2_INFO       = "acInfo";
     var PAGE_3_ENTRANCE   = "acEntrada";
     var PAGE_4_VALIDATE   = "acValidarEntrada";
@@ -70,21 +70,21 @@
     var LOAD_WAIT_INTERVAL = 200;
     var RETRY_INT_MULTIPLYER = 60000;
 
-    var SEL_P1_CERTIFICADOS_EU = "#tramite";
+    var SEL_P1_CERTIFICADOS_EU = ".mf-input__l";
     var SEL_P1_ACCEPT          = "input[value='Aceptar']";
     var SEL_P2_ENTER           = "input[value='Entrar']";
     var SEL_P3_OPT_NIE         = "input[value='N.I.E.']";
     var SEL_P3_OPT_DNI         = "input[value='D.N.I.']";
-    var SEL_P3_OPT_PASS        = "#rdbTipoDocPasDdi";
+    var SEL_P3_OPT_PASS        = "#rdbTipoDocPas";
     var SEL_P3_NUM_PREFIX      = "#txtLetraNie";
     var SEL_P3_NUMBER          = "#txtIdCitado";
     var SEL_P3_NUM_POSTFIX     = "#txtLetraNieAux";
     var SEL_P3_NAME            = "#txtDesCitado";
     var SEL_P3_COUNTRY         = "#txtPaisNac";
-    var SEL_P3_ACCEPT          = "input[value='Aceptar']";
+    var SEL_P3_ACCEPT          = "#btnEnviar";
     var SEL_P4_SOLICITAR       = "#btnEnviar";
     var SEL_P5_NO_APP          = "body:contains('no hay citas disponibles')";
-    var SEL_P5_VOLVER          = "#btnSubmit";
+    var SEL_P5_VOLVER          = "#btnSalir";
 
     var RETRY_COUNTER_STYLE = "font-size: large; display: inline; vertical-align: middle; margin: 20px;";
 
@@ -150,20 +150,13 @@
     } else if (window.location.href.indexOf(PAGE_5_SEARCH) != -1) {
         navigatePage5();
 
-    }/* else if (window.location.href.indexOf(PAGE_6_ADDITIONAL) != -1) {
-        navigatePage6();
-
-    } else if (window.location.href.indexOf(PAGE_7_OFFER) != -1) {
-        navigatePage7();
-
-    } else if (window.location.href.indexOf(PAGE_8_VERIFY) != -1) {
-        navigatePage8();
-    }*/
+    }
 
 /*
     PAGE 1
 */
     function navigatePage1() {
+        console.info("aaa")
         p1_setCertificadosEU();
     }
 
@@ -172,7 +165,7 @@
         waitForEl(
             sel, p1_setCertificadosEU, LOAD_WAIT_INTERVAL,
             function() {
-                sel.val(22);
+                sel.val(4096);
                 triggerClick(SEL_P1_ACCEPT);
             }
         );
@@ -191,7 +184,11 @@
     function navigatePage3() {
         p3_buildApplicantList();
         p3_selectApplicant();
-        p3_registerAppSwitch();
+        if (APPLICANTS.length == 1) {
+            setTimeout(triggerClick, 1000, SEL_P3_ACCEPT);
+        } else {
+            p3_registerAppSwitch();
+        }
     }
 
     function p3_buildApplicantList() {
